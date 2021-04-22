@@ -1,0 +1,3 @@
+execute_script rg
+info
+exit
