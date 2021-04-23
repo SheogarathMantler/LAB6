@@ -18,11 +18,10 @@ public class CommandExecutor {
     public void execute(ObjectInputStream inputStream, DataOutputStream outputStream) throws ClassNotFoundException, ParserConfigurationException {
         // принимаем сообщение
         boolean endOfStream = false;
-        boolean firstProblemMessage = true;
         while (!endOfStream) {
             try {
                 Message message = (Message) inputStream.readObject();
-                logger.info("message recieved");
+                logger.info("message received");
                 if (message.isEnd) {
                     logger.info("Ctrl+D ??");
                     break; // если кто-то умный нажал Ctrl+D
@@ -33,7 +32,7 @@ public class CommandExecutor {
                 command.changeType(message.type);
                 command.run();
             } catch (IOException e) { // если убили клиент, то ждём
-                if (firstProblemMessage) logger.info("can't receive message");
+                logger.info("can't receive message");
                 break;
             }
         }

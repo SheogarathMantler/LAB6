@@ -43,14 +43,14 @@ void connect() {
         }
     }
 }
-
+// собственно загрузка байт в канал
     void send(byte[] message) throws IOException {
         int r = channel.write(ByteBuffer.wrap(message));
         if (r != message.length) {
             throw new IOException();
         }
     }
-
+// функция, которая отправляет message и получает ответ
     String getResponse(Message message) {
         while (true) {
             try {
@@ -170,20 +170,6 @@ void connect() {
             try {
                 if (normalCommand) {
                     Message message = new Message(dragon, type, argument, fromScript);
-//                    if (!word.equals("execute_script")) {
-//                        objectOutputStream.writeObject(message);
-//                        objectOutputStream.flush();
-//                        send();
-//                    }
-//                    if (!afterConnecting) {
-//                        System.out.println("Я принял сообщение :");
-//                        if (!(word.equals("exit") || word.equals("clear") || word.equals("execute_script"))) {
-//                            String answer = readUTF();
-//                            System.out.println(answer);
-//                            if (answer.equals("Permission to read denied") || answer.equals("File not found"))
-//                                System.exit(0);
-//                        }
-//                    }
                     if (!(type == Command.CommandType.execute_script)) {
                         String response = getResponse(message);
                         System.out.println(response);
