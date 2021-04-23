@@ -88,6 +88,7 @@ void connect() {
             String[] text = null;
             Command.CommandType type = null;
             if (!fromScript && !wasEnter) System.out.println("Enter command");
+            wasEnter = false;
             if (scanner.hasNext()) {
                 String textline = scanner.nextLine();
                 if (textline.trim().isEmpty()) {wasEnter = true; continue;}
