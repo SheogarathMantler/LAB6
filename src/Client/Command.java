@@ -92,12 +92,14 @@ public class Command {
         outputStream.writeUTF(description);
         logger.info("answer sent");
     }
-    public void clear() {
+    public void clear() throws IOException {
         logger.info("'clear' command was detected");
+        outputStream.writeUTF("cleared");
         set.clear();
     }
     public void exit() throws IOException, ParserConfigurationException {
         logger.info("'exit' command was detected");
+        outputStream.writeUTF("session finished");
         exitStatus = true;
         save();
         outputStream.flush();

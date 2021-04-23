@@ -28,74 +28,54 @@ public class CommandReader {
         connect();
     }
 // подключение к серверу
-    void connect() {
-        while (true) {
-            try {
-                channel = SocketChannel.open(address);
-                byteArrayOutputStream = new ByteArrayOutputStream();
-                objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-                sendHeader(); // отправляем хедер??
-                byteArrayOutputStream.reset();
-                System.out.println("new connection established!");
-                afterConnecting = true; // произошел реконнект
-                break;
-            } catch (IOException e) {
-                try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
-                System.out.println("reconnecting");
-            }
+void connect() {
+    while (true) {
+        try {
+            channel = SocketChannel.open(address);
+            byteArrayOutputStream = new ByteArrayOutputStream();
+            objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+            send(byteArrayOutputStream.toByteArray());
+            byteArrayOutputStream.reset();
+            return;
+        } catch (IOException e) {
+            try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+            System.out.println("reconnecting");
         }
     }
-// попытка считать сообщение от сервера
-    String readUTF() {
-        while (true) {
-            //if (!afterConnecting) {
-                try {
-                    ByteBuffer shortBuffer = ByteBuffer.allocate(2);
-                    int r = channel.read(shortBuffer);
-                    if (r == -1) {
-                        throw new IOException();
-                    }
-                    shortBuffer.flip();
-                    short len = shortBuffer.getShort();
-                    ByteBuffer buffer = ByteBuffer.allocate(len);
-                    r = channel.read(buffer);
-                    if (r == -1) {
-                        throw new IOException();
-                    }
-                    buffer.flip();
-                    return StandardCharsets.UTF_8.decode(buffer).toString();
-                } catch (Exception e) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ignored) {
-                    }
-                    //e.printStackTrace();
-                    connect();
-                }
-            }
-        //}
+}
+
+    void send(byte[] message) throws IOException {
+        int r = channel.write(ByteBuffer.wrap(message));
+        if (r != message.length) {
+            throw new IOException();
+        }
     }
-// попытка отправить сериализованный объект на сервер
-    void send() {
+
+    String getResponse(Message message) {
         while (true) {
             try {
-                if (!afterConnecting) {
-                    int r = channel.write(ByteBuffer.wrap(byteArrayOutputStream.toByteArray()));
-                    if (r != byteArrayOutputStream.size() || !channel.isConnected()) {
-                        throw new IOException();
-                    }
+                byteArrayOutputStream.reset();
+                objectOutputStream.writeObject(message);
+                objectOutputStream.flush();
+                send(byteArrayOutputStream.toByteArray());
+
+                ByteBuffer shortBuffer = ByteBuffer.allocate(2);
+                int r = channel.read(shortBuffer);
+                if (r == -1) {
+                    throw new IOException();
                 }
-                return;
+                shortBuffer.flip();
+                short len = shortBuffer.getShort();
+                ByteBuffer buffer = ByteBuffer.allocate(len);
+                r = channel.read(buffer);
+                if (r == -1) {
+                    throw new IOException();
+                }
+                buffer.flip();
+                return StandardCharsets.UTF_8.decode(buffer).toString();
             } catch (IOException e) {
-                afterConnecting = false;
                 connect();
             }
-        }
-    }
-    void sendHeader() throws IOException {
-        int r = channel.write(ByteBuffer.wrap(byteArrayOutputStream.toByteArray()));
-        if (r != byteArrayOutputStream.size() || !channel.isConnected()) {
-            throw new IOException();
         }
     }
 // основная функция взаимодействия (считывание команд и тд)
@@ -106,13 +86,13 @@ public class CommandReader {
             afterConnecting = false;
             String[] text = null;
             Command.CommandType type = null;
-            System.out.println("Введите команду");
+            if (!fromScript) System.out.println("Enter command");
             if (scanner.hasNext()) {
                 text = scanner.nextLine().replaceAll("^\\s+", "").split(" ", 2);
             } else {
                 objectOutputStream.writeObject(new Message());
                 objectOutputStream.flush();
-                send();
+                //send();
                 System.exit(0);
             }
             String word = text[0];
@@ -168,7 +148,7 @@ public class CommandReader {
                 case ("execute_script"):
                     type = Command.CommandType.execute_script;
                     if (fromScript) {
-                        // todo
+                        System.out.println("Danger of recursion, skipping command");
                     }
                     else {
                         execute_script(argument);
@@ -188,37 +168,42 @@ public class CommandReader {
             try {
                 if (normalCommand) {
                     Message message = new Message(dragon, type, argument, fromScript);
-                    if (!word.equals("execute_script")) {
-                        objectOutputStream.writeObject(message);
-                        objectOutputStream.flush();
-                        send();
+//                    if (!word.equals("execute_script")) {
+//                        objectOutputStream.writeObject(message);
+//                        objectOutputStream.flush();
+//                        send();
+//                    }
+//                    if (!afterConnecting) {
+//                        System.out.println("Я принял сообщение :");
+//                        if (!(word.equals("exit") || word.equals("clear") || word.equals("execute_script"))) {
+//                            String answer = readUTF();
+//                            System.out.println(answer);
+//                            if (answer.equals("Permission to read denied") || answer.equals("File not found"))
+//                                System.exit(0);
+//                        }
+//                    }
+                    if (!(type == Command.CommandType.execute_script)) {
+                        String response = getResponse(message);
+                        System.out.println(response);
                     }
-                    if (!afterConnecting) {
-                        System.out.println("Я принял сообщение :");
-                        if (!(word.equals("exit") || word.equals("clear") || word.equals("execute_script"))) {
-                            String answer = readUTF();
-                            System.out.println(answer);
-                            if (answer.equals("Permission to read denied") || answer.equals("File not found"))
-                                System.exit(0);
-                        }
-                    }
+
                 }
-            } catch (SocketException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("I cant send message");
             }
             byteArrayOutputStream.reset();
         }
-        System.out.println("досвидос");
     }
 
     // всякие функции
     public void execute_script(String argument) throws IOException {
+        System.out.println("argument : " + argument);
         try {
             File script = new File(argument);
             read(new Scanner(script), true);
         } catch (IOException e) {
-            // todo
+            System.out.println("Script not found :(");
         }
     }
     public Dragon inputDragonFromConsole() throws NumberFormatException {
