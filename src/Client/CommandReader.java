@@ -36,7 +36,7 @@ public class CommandReader {
                 objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
                 sendHeader(); // отправляем хедер??
                 byteArrayOutputStream.reset();
-                System.out.println("я подключился к серверу");
+                System.out.println("new connection established!");
                 afterConnecting = true; // произошел реконнект
                 break;
             } catch (IOException e) {
