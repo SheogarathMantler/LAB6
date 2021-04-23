@@ -32,9 +32,10 @@ public class CommandReader {
         while (true) {
             try {
                 channel = SocketChannel.open(address);
-                //channel.configureBlocking(false);
                 byteArrayOutputStream = new ByteArrayOutputStream();
                 objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+                sendHeader(); // отправляем хедер??
+                byteArrayOutputStream.reset();
                 System.out.println("я подключился к серверу");
                 afterConnecting = true; // произошел реконнект
                 break;
@@ -68,15 +69,14 @@ public class CommandReader {
                         Thread.sleep(1000);
                     } catch (InterruptedException ignored) {
                     }
-                    e.printStackTrace();
+                    //e.printStackTrace();
                     connect();
                 }
-            //}
-        }
+            }
+        //}
     }
 // попытка отправить сериализованный объект на сервер
     void send() {
-
         while (true) {
             try {
                 if (!afterConnecting) {
@@ -90,6 +90,12 @@ public class CommandReader {
                 afterConnecting = false;
                 connect();
             }
+        }
+    }
+    void sendHeader() throws IOException {
+        int r = channel.write(ByteBuffer.wrap(byteArrayOutputStream.toByteArray()));
+        if (r != byteArrayOutputStream.size() || !channel.isConnected()) {
+            throw new IOException();
         }
     }
 // основная функция взаимодействия (считывание команд и тд)
@@ -187,13 +193,15 @@ public class CommandReader {
                         objectOutputStream.flush();
                         send();
                     }
-                    System.out.println("Я принял сообщение :");
-                    if (!(word.equals("exit") || word.equals("clear") || word.equals("execute_script"))) {
-                        String answer = readUTF();
-                        System.out.println(answer);
-                        if (answer.equals("Permission to read denied") || answer.equals("File not found")) System.exit(0);
+                    if (!afterConnecting) {
+                        System.out.println("Я принял сообщение :");
+                        if (!(word.equals("exit") || word.equals("clear") || word.equals("execute_script"))) {
+                            String answer = readUTF();
+                            System.out.println(answer);
+                            if (answer.equals("Permission to read denied") || answer.equals("File not found"))
+                                System.exit(0);
+                        }
                     }
-
                 }
             } catch (SocketException e) {
                 e.printStackTrace();

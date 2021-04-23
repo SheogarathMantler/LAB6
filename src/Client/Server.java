@@ -24,9 +24,10 @@ public class Server {
                 // создаем сокет
                 Socket server = serverSocket.accept();
                 // создаем потоки
-                logger.info("сокет создан");
+
                 DataOutputStream outputStream = new DataOutputStream(server.getOutputStream());
                 ObjectInputStream inputStream = new ObjectInputStream(server.getInputStream());
+                logger.info("сокет создан");
                 // считываем коллекцию из файла
                 FileCollectionReader fileCollectionReader = new FileCollectionReader(file, outputStream);
                 LinkedHashSet<Dragon> set = fileCollectionReader.readCollection(file);
