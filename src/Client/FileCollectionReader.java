@@ -28,10 +28,9 @@ public class FileCollectionReader {
     public LinkedHashSet<Dragon> readCollection(File file) throws ParserConfigurationException, SAXException, IOException {
         try {
             file = new File(System.getenv("FILE"));      // проверка на наличие переменной окружения
-//            outputStream.writeUTF("");
         } catch (NullPointerException e) {
-            outputStream.writeUTF("Cant find env variable");
-            file = new File("C:\\Users\\Sheogarath\\IdeaProjects\\LABA6.1\\src\\Client\\DragonCollection.xml");
+            System.out.println("Cant find env variable");
+            file = new File("C:\\Users\\Sheogarath\\IdeaProjects\\LAB6\\DragonCollection.xml");
         }
         Scanner xmlScanner = null;
         try {

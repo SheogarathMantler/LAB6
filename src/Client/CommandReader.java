@@ -17,27 +17,26 @@ import java.util.Scanner;
 
 // считывает команды из консоли и принимает ответы с сервера, выводит их в консоль
 public class CommandReader {
-//    private final Scanner scanner;
-//    boolean fromScript;
+
     InetSocketAddress address;
     SocketChannel channel;
     ByteArrayOutputStream byteArrayOutputStream;
     ObjectOutputStream objectOutputStream;
-//    public FuckOff(Scanner scanner, boolean fromScript) {
-//        this.fromScript = fromScript;
-//        this.scanner = scanner;
-//    }
+    boolean afterConnecting = false;
     public CommandReader(InetSocketAddress address) {
         this.address = address;
         connect();
     }
-
+// подключение к серверу
     void connect() {
         while (true) {
             try {
                 channel = SocketChannel.open(address);
+                //channel.configureBlocking(false);
                 byteArrayOutputStream = new ByteArrayOutputStream();
                 objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+                System.out.println("я подключился к серверу");
+                afterConnecting = true; // произошел реконнект
                 break;
             } catch (IOException e) {
                 try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
@@ -45,55 +44,66 @@ public class CommandReader {
             }
         }
     }
-
+// попытка считать сообщение от сервера
     String readUTF() {
         while (true) {
-            try {
-                ByteBuffer shortBuffer = ByteBuffer.allocate(2);
-                int r = channel.read(shortBuffer);
-                if (r == -1) {
-                    throw new IOException();
+            //if (!afterConnecting) {
+                try {
+                    ByteBuffer shortBuffer = ByteBuffer.allocate(2);
+                    int r = channel.read(shortBuffer);
+                    if (r == -1) {
+                        throw new IOException();
+                    }
+                    shortBuffer.flip();
+                    short len = shortBuffer.getShort();
+                    ByteBuffer buffer = ByteBuffer.allocate(len);
+                    r = channel.read(buffer);
+                    if (r == -1) {
+                        throw new IOException();
+                    }
+                    buffer.flip();
+                    return StandardCharsets.UTF_8.decode(buffer).toString();
+                } catch (Exception e) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ignored) {
+                    }
+                    e.printStackTrace();
+                    connect();
                 }
-                shortBuffer.flip();
-                short len = shortBuffer.getShort();
-                ByteBuffer buffer = ByteBuffer.allocate(len);
-                r = channel.read(buffer);
-                if (r == -1) {
-                    throw new IOException();
-                }
-                buffer.flip();
-                return StandardCharsets.UTF_8.decode(buffer).toString();
-            } catch (IOException e) {
-                connect();
-            }
+            //}
         }
     }
-
+// попытка отправить сериализованный объект на сервер
     void send() {
+
         while (true) {
             try {
-                int r = channel.write(ByteBuffer.wrap(byteArrayOutputStream.toByteArray()));
-                if (r != byteArrayOutputStream.size() || !channel.isConnected()) {
-                    throw new IOException();
+                if (!afterConnecting) {
+                    int r = channel.write(ByteBuffer.wrap(byteArrayOutputStream.toByteArray()));
+                    if (r != byteArrayOutputStream.size() || !channel.isConnected()) {
+                        throw new IOException();
+                    }
                 }
                 return;
             } catch (IOException e) {
+                afterConnecting = false;
                 connect();
             }
         }
     }
-
+// основная функция взаимодействия (считывание команд и тд)
     public void read(Scanner scanner, boolean fromScript) throws IOException {
         boolean exitStatus = false;
         Dragon dragon = null;
         while (!exitStatus) {
+            afterConnecting = false;
             String[] text = null;
             Command.CommandType type = null;
             System.out.println("Введите команду");
             if (scanner.hasNext()) {
                 text = scanner.nextLine().replaceAll("^\\s+", "").split(" ", 2);
             } else {
-//                outputStream.writeObject(new Message());
                 objectOutputStream.writeObject(new Message());
                 objectOutputStream.flush();
                 send();
@@ -178,10 +188,16 @@ public class CommandReader {
                         send();
                     }
                     System.out.println("Я принял сообщение :");
-                    if (!(word.equals("exit") || word.equals("clear") || word.equals("execute_script")))
-                        System.out.println(readUTF());
+                    if (!(word.equals("exit") || word.equals("clear") || word.equals("execute_script"))) {
+                        String answer = readUTF();
+                        System.out.println(answer);
+                        if (answer.equals("Permission to read denied") || answer.equals("File not found")) System.exit(0);
+                    }
+
                 }
             } catch (SocketException e) {
+                e.printStackTrace();
+                System.out.println("I cant send message");
             }
             byteArrayOutputStream.reset();
         }
@@ -216,7 +232,7 @@ public class CommandReader {
         }
         System.out.println("Enter x coordinate (long)");
         long x = inputLongField();
-        System.out.println("Enter y coordinate (Double)");
+        System.out.println("Enter y coordinate (Double, not NULL ^_^ )");
         Double y = inputDoubleField();
         Coordinates coordinates = new Coordinates(x, y);
         System.out.println("Enter age (Long, positive)");

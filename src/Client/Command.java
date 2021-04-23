@@ -61,14 +61,25 @@ public class Command {
     }
 
     public void help() throws IOException {
-        if (argument != null) logger.info("'help' command was detected");
-        Scanner helpscanner = new Scanner(new File("help.txt"));
-        while (helpscanner.hasNext()){
-            outputStream.writeUTF(helpscanner.nextLine());
-        }
+        logger.info("'help' command was detected");
+        outputStream.writeUTF("help : вывести справку по доступным командам\n" +
+                "info : вывести в стандартный поток вывода информацию о коллекции (тип, дата инициализации, количество элементов и т.д.)\n" +
+                "show : вывести в стандартный поток вывода все элементы коллекции в строковом представлении\n" +
+                "add {element} : добавить новый элемент в коллекцию\n" +
+                "update id {element} : обновить значение элемента коллекции, id которого равен заданному\n" +
+                "remove_by_id id : удалить элемент из коллекции по его id\n" +
+                "clear : очистить коллекцию\n" +
+                "execute_script file_name : считать и исполнить скрипт из указанного файла. В скрипте содержатся команды в таком же виде, в котором их вводит пользователь в интерактивном режиме.\n" +
+                "exit : завершить программу (без сохранения в файл)\n" +
+                "add_if_max {element} : добавить новый элемент в коллекцию, если его значение превышает значение наибольшего элемента этой коллекции\n" +
+                "add_if_min {element} : добавить новый элемент в коллекцию, если его значение меньше, чем у наименьшего элемента этой коллекции\n" +
+                "remove_lower {element} : удалить из коллекции все элементы, меньшие, чем заданный\n" +
+                "filter_starts_with_name name : вывести элементы, значение поля name которых начинается с заданной подстроки\n" +
+                "filter_less_than_age age : вывести элементы, значение поля age которых меньше заданного\n" +
+                "print_field_descending_cave : вывести значения поля cave всех элементов в порядке убывания");
     }
     public void info() throws IOException {
-        if (argument != null) logger.info("'info' command was detected");
+        logger.info("'info' command was detected");
         outputStream.writeUTF("type = LinkedHashSet of Dragon's \nnumber of items = " + set.size());
         logger.info("answer sent");
     }
@@ -222,8 +233,12 @@ public class Command {
             String caveField = dragon.getCave().getDepth() + " " + dragon.getCave().getNumberOfTreasures();
             dragonElement.setAttribute("cave", caveField);
         }
-        writeDocument(newDocument, System.getenv("FILE"));
-        logger.info("saved to disk");
+        try {
+            writeDocument(newDocument, System.getenv("FILE"));
+            logger.info("saved to disk");
+        } catch (NullPointerException e) {
+            logger.info("not saved to disk");
+        }
     }
 
 
