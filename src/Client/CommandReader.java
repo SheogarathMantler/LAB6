@@ -82,17 +82,19 @@ void connect() {
     public void read(Scanner scanner, boolean fromScript) throws IOException {
         boolean exitStatus = false;
         Dragon dragon = null;
+        boolean wasEnter = false;
         while (!exitStatus) {
             afterConnecting = false;
             String[] text = null;
             Command.CommandType type = null;
-            if (!fromScript) System.out.println("Enter command");
+            if (!fromScript && !wasEnter) System.out.println("Enter command");
             if (scanner.hasNext()) {
-                text = scanner.nextLine().replaceAll("^\\s+", "").split(" ", 2);
+                String textline = scanner.nextLine();
+                if (textline.trim().isEmpty()) {wasEnter = true; continue;}
+                text = textline.replaceAll("^\\s+", "").split(" ", 2);
             } else {
                 objectOutputStream.writeObject(new Message());
                 objectOutputStream.flush();
-                //send();
                 System.exit(0);
             }
             String word = text[0];
@@ -161,7 +163,7 @@ void connect() {
                     type = Command.CommandType.filter_less_than_age;
                     break;
                 default:
-                    System.out.println("Invalid command. Try 'help' to see list of commands");
+                    System.out.println("Invalid command. Try 'help' to see the list of commands");
                     normalCommand = false;
                     break;
             }
