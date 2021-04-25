@@ -173,7 +173,12 @@ void connect() {
                     Message message = new Message(dragon, type, argument, fromScript);
                     if (!(type == Command.CommandType.execute_script)) {
                         String response = getResponse(message);
-                        System.out.println(response);
+                        if (response.equals("Cant find env variable") || response.equals("Permission to read denied") || response.equals("File not found")){
+                            System.out.println("The server has no access to Collection. App is turning off. Try later");
+                            System.exit(0);
+                        } else {
+                            System.out.println(response);
+                        }
                     }
 
                 }
@@ -191,7 +196,7 @@ void connect() {
         try {
             File script = new File(argument);
             read(new Scanner(script), true);
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             System.out.println("Script not found :(");
         }
     }

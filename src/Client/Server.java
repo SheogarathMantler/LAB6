@@ -16,8 +16,14 @@ import java.util.logging.Logger;
 
 public class Server {
     public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException, InterruptedException {
-        ServerSocket serverSocket = new ServerSocket(5000);
         Logger logger = Logger.getLogger("server.main");
+        ServerSocket serverSocket = null;
+        try {
+            serverSocket = new ServerSocket(5000);
+        } catch (SocketException e) {
+            logger.info("Can't make server socket. Server is turning off");
+            System.exit(0);
+        }
         while(true) {
             try {
                 File file = null;
@@ -30,14 +36,17 @@ public class Server {
                 logger.info("сокет создан");
                 // считываем коллекцию из файла
                 FileCollectionReader fileCollectionReader = new FileCollectionReader(file, outputStream);
-                LinkedHashSet<Dragon> set = fileCollectionReader.readCollection(file);
+                LinkedHashSet<Dragon> set = null;
+                try {
+                    set = fileCollectionReader.readCollection(file);
+                    if (server.isConnected()) {
+                        logger.info("server is connected");
+                        CommandExecutor executor = new CommandExecutor(set, false);
+                        executor.execute(inputStream, outputStream);
+                        logger.info("session ended. Waiting for new session ... ");
+                    }
+                } catch (FileCollectionException ignored) {}
                 // исполняем команды
-                if (server.isConnected()) {
-                    logger.info("server is connected");
-                    CommandExecutor executor = new CommandExecutor(set, false);
-                    executor.execute(inputStream, outputStream);
-                    logger.info("session ended. Waiting for new session ... ");
-                }
             } catch (SocketException e) {
                 e.printStackTrace();
                 System.out.println("something went wrong");

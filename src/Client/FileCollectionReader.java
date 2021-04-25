@@ -16,42 +16,48 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.logging.Logger;
+
 // парсит xml и считывает коллекцию в объект класса LinkedHashSet
 public class FileCollectionReader {
     File file;
     DataOutputStream outputStream;
+    private final Logger logger = Logger.getLogger("server.fileCollectionReader");
     public FileCollectionReader(File file, DataOutputStream outputStream){
         this.outputStream = outputStream;
         this.file = file;
     }
 
-    public LinkedHashSet<Dragon> readCollection(File file) throws ParserConfigurationException, SAXException, IOException {
+    public LinkedHashSet<Dragon> readCollection(File file) throws ParserConfigurationException, SAXException, IOException, FileCollectionException {
         try {
             file = new File(System.getenv("FILE"));      // проверка на наличие переменной окружения
         } catch (NullPointerException e) {
-            System.out.println("Cant find env variable");
-            file = new File("C:\\Users\\Sheogarath\\IdeaProjects\\LAB6\\DragonCollection.xml");
+            logger.info("Cant find env variable");
+            outputStream.writeUTF("Cant find env variable");
+            throw new FileCollectionException();
         }
         Scanner xmlScanner = null;
         try {
             xmlScanner = new Scanner(file);
+            outputStream.flush();
+            String xmlString = "";
+            while(xmlScanner.hasNext()) {
+                xmlString += xmlScanner.nextLine();
+            }
+            LinkedHashSet<Dragon> set = new LinkedHashSet<>();
+            parse(set, xmlString);
+            changeIds(set);
+            return set;
         } catch (FileNotFoundException e) {   // неправильный путь к файлу или нет доступа на чтение
             if (!file.canRead()) {
+                logger.info("Permission to read denied");
                 outputStream.writeUTF("Permission to read denied");
             } else {
+                logger.info("File not found");
                 outputStream.writeUTF("File not found");
             }
-            System.exit(0);
+            throw new FileCollectionException();
         }
-        outputStream.flush();
-        String xmlString = "";
-        while(xmlScanner.hasNext()) {
-            xmlString += xmlScanner.nextLine();
-        }
-        LinkedHashSet<Dragon> set = new LinkedHashSet<>();
-        parse(set, xmlString);
-        changeIds(set);
-        return set;
     }
 
 
