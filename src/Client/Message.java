@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class Message implements Serializable {
     Command.CommandType type;
     String argument;
-    Dragon dragon = null;
+    Dragon dragon = new Dragon();
     boolean metaFromScript;
     boolean isEnd = false;
     public Message() {

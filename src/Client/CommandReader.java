@@ -81,7 +81,7 @@ void connect() {
 // основная функция взаимодействия (считывание команд и тд)
     public void read(Scanner scanner, boolean fromScript) throws IOException {
         boolean exitStatus = false;
-        Dragon dragon = null;
+        Dragon dragon = new Dragon();
         boolean wasEnter = false;
         while (!exitStatus) {
             afterConnecting = false;

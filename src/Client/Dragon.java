@@ -30,6 +30,17 @@ public class Dragon implements Serializable {
      * @param t type of dragon
      * @param c cave where dragon lives
      */
+    public Dragon() {
+        this.id = 1;
+        this.name = "empty";
+        this.coordinates = new Coordinates(0, 0d);
+        this.creationDate = LocalDateTime.now();
+        this.age = 1L;
+        this.description = "empty";
+        this.wingspan = 1d;
+        this.type = DragonType.AIR;
+        this.cave = new DragonCave(1, 1d);
+    }
     public Dragon(Integer Id, String n, Coordinates coords, java.time.LocalDateTime creationDate, Long age, String d,
                   Double w, DragonType t, DragonCave c ) {
         this.id = Id;
