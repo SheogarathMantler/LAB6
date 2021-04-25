@@ -3,6 +3,7 @@ package Client;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.LinkedHashSet;
+import java.util.Random;
 import java.util.logging.Logger;
 
 // принимает от клиента объект Message, преобразовывает его в команду и выполняет её
@@ -28,6 +29,7 @@ public class CommandExecutor {
                 }
                 if (message.type == Command.CommandType.exit && !message.metaFromScript)
                     endOfStream = true; // заканчиваем принимать сообщения после команды exit не из скрипта
+                if (!validate(message.dragon)) throw new IOException();
                 Command command = new Command(outputStream, message.argument, message.dragon, set, fromScript);
                 command.changeType(message.type);
                 command.run();
@@ -38,6 +40,14 @@ public class CommandExecutor {
         }
 
     }
-
+    public boolean validate(Dragon dragon) {
+        try {
+            Dragon dragon1 = new Dragon(dragon.getId(), dragon.getName(), dragon.getCoordinates(), dragon.getCreationDate(),
+                    dragon.getAge(), dragon.getDescription(), dragon.getWingspan(), dragon.getType(), dragon.getCave());
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 }
 

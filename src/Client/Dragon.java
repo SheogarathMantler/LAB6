@@ -58,7 +58,9 @@ public class Dragon implements Serializable {
             throw new NumberFormatException();
         }
         this.type = t;
+        if (this.type == null) throw new NumberFormatException();
         this.cave = c;
+        if (this.cave == null) throw new NumberFormatException();
     }
     public Integer getId() {return id;}
     public String getName() {return name;}
