@@ -10,8 +10,8 @@ public class Message implements Serializable {
     Dragon dragon = new Dragon();
     boolean metaFromScript;
     boolean isEnd = false;
-    public Message() {
-        this.isEnd = true;
+    public Message(boolean isEnd) {
+        this.isEnd = isEnd;
     }
     public Message(Command.CommandType type, String argument, boolean metaFromScript) {
         this.argument = argument;

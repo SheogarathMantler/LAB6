@@ -39,15 +39,15 @@ public class Server {
                 LinkedHashSet<Dragon> set = null;
                 try {
                     set = fileCollectionReader.readCollection(file);
-                    if (server.isConnected()) {
-                        logger.info("server is connected");
-
-                        CommandExecutor executor = new CommandExecutor(set, false);
-                        executor.execute(inputStream, outputStream);
-                        logger.info("session ended. Waiting for new session ... ");
-                    }
-                } catch (FileCollectionException ignored) {}
-                // исполняем команды
+                } catch (FileCollectionException e) {
+                    set = new LinkedHashSet<>();
+                }
+                if (server.isConnected()) {
+                    logger.info("server is connected");
+                    CommandExecutor executor = new CommandExecutor(set, false);
+                    executor.execute(inputStream, outputStream);
+                    logger.info("session ended. Waiting for new session ... ");
+                }
             } catch (SocketException e) {
                 e.printStackTrace();
                 System.out.println("something went wrong");

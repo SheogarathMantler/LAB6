@@ -82,7 +82,7 @@ void connect() {
     public void read(Scanner scanner, boolean fromScript) throws IOException {
         boolean exitStatus = false;
         Dragon dragon = new Dragon();
-        boolean wasEnter = false;
+        boolean wasEnter = false;                                 // для проверки нажатия на клавишу Enter
         while (!exitStatus) {
             afterConnecting = false;
             String[] text = null;
@@ -94,7 +94,7 @@ void connect() {
                 if (textline.trim().isEmpty()) {wasEnter = true; continue;}
                 text = textline.replaceAll("^\\s+", "").split(" ", 2);
             } else {
-                objectOutputStream.writeObject(new Message());
+                objectOutputStream.writeObject(new Message(true));
                 objectOutputStream.flush();
                 System.exit(0);
             }
@@ -180,13 +180,72 @@ void connect() {
                     if (!(type == Command.CommandType.execute_script)) {
                         String response = getResponse(message);
                         if (response.equals("Cant find env variable") || response.equals("Permission to read denied") || response.equals("File not found")){
-                            System.out.println("The server has no access to Collection. App is turning off. Try later");
-                            System.exit(0);
+                            System.out.println("The server has no access to Collection. App is turning in demo mode. You can use only 'help' and 'exit'");
+                            readDemo(scanner);
+                            break;
                         } else {
                             System.out.println(response);
                         }
                     }
 
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("I cant send message");
+            }
+            byteArrayOutputStream.reset();
+        }
+    }
+    public void readDemo(Scanner scanner) throws IOException {
+        objectOutputStream.flush();
+        byteArrayOutputStream.flush();
+
+        boolean exitStatus = false;
+        boolean wasEnter = false;
+        getResponse(new Message(false)); // для проверки нажатия на клавишу Enter
+        while (!exitStatus) {
+            afterConnecting = false;
+            String[] text = null;
+            Command.CommandType type = null;
+            if (!wasEnter) System.out.println("Enter command");
+            wasEnter = false;
+            if (scanner.hasNext()) {
+                String textline = scanner.nextLine();
+                if (textline.trim().isEmpty()) {
+                    wasEnter = true;
+                    continue;
+                }
+                text = textline.replaceAll("^\\s+", "").split(" ", 2);
+            } else {
+                objectOutputStream.writeObject(new Message(true));
+                objectOutputStream.flush();
+                System.exit(0);
+            }
+            String word = text[0];
+            boolean normalCommand = true;
+            switch (word) {
+                case ("help"):
+                    type = Command.CommandType.help;
+                    break;
+                case ("exit"):
+                    exitStatus = true;
+                    type = Command.CommandType.exit;
+                    break;
+                default:
+                    System.out.println("You can use only 'help' and 'exit' commands when server has no access to collection");
+                    normalCommand = false;
+                    break;
+            }
+            try {
+                if (normalCommand) {
+                    System.out.println("here");
+                    Message message = new Message(new Dragon(), type, null, false);
+                    String response = getResponse(message);
+                    if (response.equals("Cant find env variable") || response.equals("Permission to read denied") || response.equals("File not found")) {
+                        System.out.println("wtf");
+                    } else {
+                        System.out.println(response);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();

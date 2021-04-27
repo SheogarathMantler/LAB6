@@ -42,22 +42,24 @@ public class Command {
     }
     public void run() throws IOException, ParserConfigurationException {
         logger.info("running command");
-        switch (type) {
-            case help: this.help(); break;
-            case info: this.info(); break;
-            case show: this.show(); break;
-            case clear: this.clear(); break;
-            case exit: this.exit(); break;
-            case add: this.add(); break;
-            case add_if_max: this.add_if_max(); break;
-            case add_if_min: this.add_if_min(); break;
-            case filter_less_than_age: this.filter_less_than_age(); break;
-            case filter_starts_with_name: this.filter_starts_with_name(); break;
-            case print_field_descending_cave: this.print_field_descending_cave(); break;
-            case update: this.update(); break;
-            case remove_by_id: this.remove_by_id(); break;
-            case remove_lower: this.remove_lower(); break;
-        }
+        try {
+            switch (type) {
+                case help: this.help();break;
+                case info: this.info();break;
+                case show: this.show();break;
+                case clear: this.clear();break;
+                case exit: this.exit();break;
+                case add: this.add();break;
+                case add_if_max: this.add_if_max();break;
+                case add_if_min: this.add_if_min();break;
+                case filter_less_than_age: this.filter_less_than_age();break;
+                case filter_starts_with_name: this.filter_starts_with_name();break;
+                case print_field_descending_cave: this.print_field_descending_cave();break;
+                case update: this.update();break;
+                case remove_by_id: this.remove_by_id();break;
+                case remove_lower: this.remove_lower();break;
+            }
+        }   catch (NullPointerException ignored) {}
     }
 
     public void help() throws IOException {
