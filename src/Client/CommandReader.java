@@ -142,8 +142,14 @@ void connect() {
                     type = Command.CommandType.remove_lower;
                     break;
                 case ("update"):
-                    type = Command.CommandType.update;
-                    dragon = inputDragonFromConsole();
+                    if (argument == null || !isDigit(argument)) {
+                        System.out.println("Invalid argument");
+                        normalCommand = false;
+                    } else {
+                        type = Command.CommandType.update;
+                        dragon = inputDragonFromConsole();
+                    }
+
                     break;
                 case ("remove_by_id"):
                     type = Command.CommandType.remove_by_id;
@@ -371,6 +377,14 @@ void connect() {
             System.exit(0);
         }
         return x;
+    }
+    private static boolean isDigit(String s) throws NumberFormatException {
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }
 

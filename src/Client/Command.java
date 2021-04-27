@@ -140,7 +140,7 @@ public class Command {
         }
         logger.info("answer sent");
     }
-    public void remove_lower() throws IOException {
+    public void remove_lower() {
         logger.info("'remove_lower' command was detected");
         set.removeIf(d -> d.getAge() < dragon.getAge());
     }

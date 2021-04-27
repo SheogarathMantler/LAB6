@@ -41,6 +41,7 @@ public class Server {
                     set = fileCollectionReader.readCollection(file);
                     if (server.isConnected()) {
                         logger.info("server is connected");
+
                         CommandExecutor executor = new CommandExecutor(set, false);
                         executor.execute(inputStream, outputStream);
                         logger.info("session ended. Waiting for new session ... ");

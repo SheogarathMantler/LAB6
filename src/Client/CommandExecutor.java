@@ -25,11 +25,11 @@ public class CommandExecutor {
                 logger.info("message received");
                 if (message.isEnd) {
                     logger.info("Ctrl+D ??");
-                    break; // если кто-то умный нажал Ctrl+D
+                    break;                                                                 // если кто-то умный нажал Ctrl+D
                 }
                 if (message.type == Command.CommandType.exit && !message.metaFromScript)
-                    endOfStream = true; // заканчиваем принимать сообщения после команды exit не из скрипта
-                if (!validate(message.dragon)) throw new IOException();
+                    endOfStream = true;                                                   // заканчиваем принимать сообщения после команды exit не из скрипта
+                if (!validate(message.dragon) || !(message.dragon instanceof Dragon)) throw new IOException();
                 Command command = new Command(outputStream, message.argument, message.dragon, set, fromScript);
                 command.changeType(message.type);
                 command.run();

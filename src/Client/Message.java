@@ -1,5 +1,7 @@
 package Client;
 
+import com.sun.org.apache.xml.internal.security.algorithms.MessageDigestAlgorithm;
+
 import java.io.Serializable;
 // класс команды, который передается от клиента на сервер
 public class Message implements Serializable {
