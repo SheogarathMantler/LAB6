@@ -24,6 +24,8 @@ public class Server {
             logger.info("Can't make server socket. Server is turning off");
             System.exit(0);
         }
+        LinkedHashSet<Dragon> set = null;
+        FileCollectionReader fileCollectionReader;
         while(true) {
             try {
                 File file = null;
@@ -35,12 +37,13 @@ public class Server {
                 ObjectInputStream inputStream = new ObjectInputStream(server.getInputStream());
                 logger.info("сокет создан");
                 // считываем коллекцию из файла
-                FileCollectionReader fileCollectionReader = new FileCollectionReader(file, outputStream);
-                LinkedHashSet<Dragon> set = null;
+                 fileCollectionReader = new FileCollectionReader(file, outputStream);
+
                 try {
                     set = fileCollectionReader.readCollection(file);
                 } catch (FileCollectionException e) {
                     set = new LinkedHashSet<>();
+                    System.out.println("создан пиздец");;
                 }
                 if (server.isConnected()) {
                     logger.info("server is connected");
@@ -49,7 +52,7 @@ public class Server {
                     logger.info("session ended. Waiting for new session ... ");
                 }
             } catch (SocketException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 System.out.println("something went wrong");
                 Thread.sleep(100);
             }

@@ -9,7 +9,10 @@ public class Client {
         Scanner consoleScanner = new Scanner(System.in);
         InetSocketAddress address = new InetSocketAddress(InetAddress.getLocalHost(), 5000);
         CommandReader commandReader = new CommandReader(address);
-        commandReader.read(consoleScanner, false);
+        boolean needNormalMode = true;
+        while (needNormalMode) {
+            needNormalMode = commandReader.read(consoleScanner, false);
+        }
     }
 }
 

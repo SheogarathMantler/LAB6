@@ -17,7 +17,7 @@ import java.util.Scanner;
 
 // считывает команды из консоли и принимает ответы с сервера, выводит их в консоль
 public class CommandReader {
-
+    boolean demoMode;
     InetSocketAddress address;
     SocketChannel channel;
     ByteArrayOutputStream byteArrayOutputStream;
@@ -79,7 +79,7 @@ void connect() {
         }
     }
 // основная функция взаимодействия (считывание команд и тд)
-    public void read(Scanner scanner, boolean fromScript) throws IOException {
+    public boolean read(Scanner scanner, boolean fromScript) throws IOException {
         boolean exitStatus = false;
         Dragon dragon = new Dragon();
         boolean wasEnter = false;                                 // для проверки нажатия на клавишу Enter
@@ -179,10 +179,12 @@ void connect() {
                     Message message = new Message(dragon, type, argument, fromScript);
                     if (!(type == Command.CommandType.execute_script)) {
                         String response = getResponse(message);
-                        if (response.equals("Cant find env variable") || response.equals("Permission to read denied") || response.equals("File not found")){
-                            System.out.println("The server has no access to Collection. App is turning in demo mode. You can use only 'help' and 'exit'");
-                            readDemo(scanner);
-                            break;
+                        if (response.equals("Cant find env variable") || response.equals("Permission to read denied") || response.equals("File not found")){// переход в демо мод
+                            System.out.println("The server has no access to Collection. App is turning in demo mode. You can use only 'help' and 'exit' \n " +
+                                    "If you want to try to turn on standard mode restart the client app please");
+
+                            return readDemo(scanner);
+                            //break;
                         } else {
                             System.out.println(response);
                         }
@@ -195,8 +197,9 @@ void connect() {
             }
             byteArrayOutputStream.reset();
         }
+        return false;
     }
-    public void readDemo(Scanner scanner) throws IOException {
+    public boolean readDemo(Scanner scanner) throws IOException {
         objectOutputStream.flush();
         byteArrayOutputStream.flush();
 
@@ -231,6 +234,9 @@ void connect() {
                     exitStatus = true;
                     type = Command.CommandType.exit;
                     break;
+                case ("mode"):
+                    System.out.println("trying");
+                    return true;
                 default:
                     System.out.println("You can use only 'help' and 'exit' commands when server has no access to collection");
                     normalCommand = false;
@@ -238,11 +244,10 @@ void connect() {
             }
             try {
                 if (normalCommand) {
-                    System.out.println("here");
                     Message message = new Message(new Dragon(), type, null, false);
                     String response = getResponse(message);
                     if (response.equals("Cant find env variable") || response.equals("Permission to read denied") || response.equals("File not found")) {
-                        System.out.println("wtf");
+                        //System.out.println("wtf");
                     } else {
                         System.out.println(response);
                     }
@@ -253,6 +258,7 @@ void connect() {
             }
             byteArrayOutputStream.reset();
         }
+        return false;
     }
 
     // всякие функции
