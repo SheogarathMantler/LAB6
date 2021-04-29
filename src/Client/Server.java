@@ -43,7 +43,8 @@ public class Server {
                     set = fileCollectionReader.readCollection(file);
                 } catch (FileCollectionException e) {
                     set = new LinkedHashSet<>();
-                    System.out.println("создан пиздец");;
+                    set.add(new Dragon(true));
+                    System.out.println("создан пипец");
                 }
                 if (server.isConnected()) {
                     logger.info("server is connected");

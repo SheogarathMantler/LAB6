@@ -17,19 +17,8 @@ public class Dragon implements Serializable {
     private Double wingspan;
     private DragonType type;
     private DragonCave cave;
+    public boolean marker = false;
 
-    /**
-     * Standard constructor
-     * @param Id id of dragon, generated automatically
-     * @param n name of dragon
-     * @param coords coordinates of dragon
-     * @param creationDate creation date of dragon (not birthday), generated automatically
-     * @param age age of dragon
-     * @param d description of dragon
-     * @param w wingspan of dragon
-     * @param t type of dragon
-     * @param c cave where dragon lives
-     */
     public Dragon() {
         this.id = 1;
         this.name = "empty";
@@ -40,6 +29,10 @@ public class Dragon implements Serializable {
         this.wingspan = 1d;
         this.type = DragonType.AIR;
         this.cave = new DragonCave(1, 1d);
+    }
+    public Dragon(boolean marker) {
+        super();
+        this.marker = marker;
     }
     public Dragon(Integer Id, String n, Coordinates coords, java.time.LocalDateTime creationDate, Long age, String d,
                   Double w, DragonType t, DragonCave c ) {
@@ -84,7 +77,7 @@ public class Dragon implements Serializable {
     public Double getWingspan() {return wingspan;}
     public DragonType getType() {return type;}
     public DragonCave getCave(){ return cave; }
-
+    public boolean getMarker() {return marker; }
     /**
      * update of dragon, used when command 'update' called.
      * @param dragon the dragon that will change the dragon that has the method 'update()' called

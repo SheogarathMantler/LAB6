@@ -58,8 +58,21 @@ public class Command {
                 case update: this.update();break;
                 case remove_by_id: this.remove_by_id();break;
                 case remove_lower: this.remove_lower();break;
+                case mode: this.mode();break;
             }
         }   catch (NullPointerException ignored) {}
+    }
+    public void mode() throws IOException {
+        System.out.println("here");
+        logger.info("'mode' command trying to get access");
+        boolean isMarker = false;
+        for (Dragon dragon : set) { if (dragon.getMarker()) isMarker = true;}
+        if (isMarker) {
+            outputStream.writeUTF("not connected yet");
+            logger.info("answer sent");
+        } else {
+            outputStream.writeUTF("connection set!");
+        }
     }
 
     public void help() throws IOException {
@@ -284,7 +297,7 @@ public class Command {
 
     public enum CommandType {
         help, show, info, clear, exit, print_field_descending_cave, add, add_if_max, add_if_min, remove_lower,
-        update, remove_by_id, execute_script, filter_starts_with_name, filter_less_than_age
+        update, remove_by_id, execute_script, filter_starts_with_name, filter_less_than_age, mode
     }
 }
 

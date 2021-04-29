@@ -28,21 +28,21 @@ public class CommandReader {
         connect();
     }
 // подключение к серверу
-void connect() {
-    while (true) {
-        try {
-            channel = SocketChannel.open(address);
-            byteArrayOutputStream = new ByteArrayOutputStream();
-            objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-            send(byteArrayOutputStream.toByteArray());
-            byteArrayOutputStream.reset();
-            return;
-        } catch (IOException e) {
-            try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
-            System.out.println("reconnecting");
+    void connect() {
+        while (true) {
+            try {
+                channel = SocketChannel.open(address);
+                byteArrayOutputStream = new ByteArrayOutputStream();
+                objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+                send(byteArrayOutputStream.toByteArray());
+                byteArrayOutputStream.reset();
+                return;
+            } catch (IOException e) {
+                try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+                System.out.println("reconnecting");
+            }
         }
     }
-}
 // собственно загрузка байт в канал
     void send(byte[] message) throws IOException {
         int r = channel.write(ByteBuffer.wrap(message));
@@ -174,12 +174,14 @@ void connect() {
                     normalCommand = false;
                     break;
             }
-            try {
+            try {            // если нормальная команда отправляем на сервер
                 if (normalCommand) {
                     Message message = new Message(dragon, type, argument, fromScript);
                     if (!(type == Command.CommandType.execute_script)) {
                         String response = getResponse(message);
-                        if (response.equals("Cant find env variable") || response.equals("Permission to read denied") || response.equals("File not found")){// переход в демо мод
+                        if (response.equals("Cant find env variable") || response.equals("Permission to read denied") || response.equals("File not found") ||
+                        response.equals("not connected yet")){// переход в демо мод
+                            System.out.println(response);
                             System.out.println("The server has no access to Collection. App is turning in demo mode. You can use only 'help' and 'exit' \n " +
                                     "If you want to try to turn on standard mode restart the client app please");
 
@@ -205,7 +207,7 @@ void connect() {
 
         boolean exitStatus = false;
         boolean wasEnter = false;
-        getResponse(new Message(false)); // для проверки нажатия на клавишу Enter
+        //getResponse(new Message(false)); // для проверки нажатия на клавишу Enter
         while (!exitStatus) {
             afterConnecting = false;
             String[] text = null;
@@ -236,7 +238,8 @@ void connect() {
                     break;
                 case ("mode"):
                     System.out.println("trying");
-                    return true;
+                    type = Command.CommandType.mode;
+                    break;
                 default:
                     System.out.println("You can use only 'help' and 'exit' commands when server has no access to collection");
                     normalCommand = false;
@@ -246,11 +249,15 @@ void connect() {
                 if (normalCommand) {
                     Message message = new Message(new Dragon(), type, null, false);
                     String response = getResponse(message);
-                    if (response.equals("Cant find env variable") || response.equals("Permission to read denied") || response.equals("File not found")) {
-                        //System.out.println("wtf");
+                    if (response.equals("Cant find env variable") || response.equals("Permission to read denied") || response.equals("File not found") ||
+                            response.equals("not connected yet")) {
+                        System.out.println(response);
+                        type = null;
+                        continue;
                     } else {
                         System.out.println(response);
                     }
+                    if (type == Command.CommandType.mode) return true;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
