@@ -69,7 +69,7 @@ public class Command {
         for (Dragon dragon : set) { if (dragon.getMarker()) isMarker = true;}
         if (isMarker) {
             outputStream.writeUTF("not connected yet");
-            logger.info("answer sent");
+            logger.info("Not connected yet, answer sent");
         } else {
             outputStream.writeUTF("connection set!");
         }

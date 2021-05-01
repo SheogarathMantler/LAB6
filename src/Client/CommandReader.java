@@ -1,5 +1,6 @@
 package Client;
 
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import org.w3c.dom.Document;
 
 import javax.xml.transform.Transformer;
@@ -77,6 +78,24 @@ public class CommandReader {
                 connect();
             }
         }
+    }
+    String tryRead() {
+        try {
+            ByteBuffer shortBuffer = ByteBuffer.allocate(2);
+            int r = channel.read(shortBuffer);
+            if (r == -1) {
+                throw new IOException();
+            }
+            shortBuffer.flip();
+            short len = shortBuffer.getShort();
+            ByteBuffer buffer = ByteBuffer.allocate(len);
+            r = channel.read(buffer);
+            if (r == -1) {
+                throw new IOException();
+            }
+            buffer.flip();
+            return StandardCharsets.UTF_8.decode(buffer).toString();
+        } catch (IOException e) { return null;}
     }
 // основная функция взаимодействия (считывание команд и тд)
     public boolean read(Scanner scanner, boolean fromScript) throws IOException {
@@ -184,7 +203,7 @@ public class CommandReader {
                             System.out.println(response);
                             System.out.println("The server has no access to Collection. App is turning in demo mode. You can use only 'help' and 'exit' \n " +
                                     "If you want to try to turn on standard mode restart the client app please");
-
+                            tryRead();
                             return readDemo(scanner);
                             //break;
                         } else {
@@ -235,6 +254,7 @@ public class CommandReader {
                 case ("exit"):
                     exitStatus = true;
                     type = Command.CommandType.exit;
+                    System.exit(0);
                     break;
                 case ("mode"):
                     System.out.println("trying");
@@ -249,10 +269,11 @@ public class CommandReader {
                 if (normalCommand) {
                     Message message = new Message(new Dragon(), type, null, false);
                     String response = getResponse(message);
+                    if (response.startsWith("help") && type != Command.CommandType.help) response = "";
                     if (response.equals("Cant find env variable") || response.equals("Permission to read denied") || response.equals("File not found") ||
                             response.equals("not connected yet")) {
                         System.out.println(response);
-                        type = null;
+
                         continue;
                     } else {
                         System.out.println(response);
@@ -260,7 +281,6 @@ public class CommandReader {
                     if (type == Command.CommandType.mode) return true;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 System.out.println("I cant send message");
             }
             byteArrayOutputStream.reset();

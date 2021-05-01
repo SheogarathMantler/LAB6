@@ -34,6 +34,7 @@ public class CommandExecutor {
                 command.changeType(message.type);
                 command.run();
             } catch (IOException e) { // если убили клиент, то ждём
+                e.printStackTrace();
                 logger.info("can't receive message");
                 break;
             }
